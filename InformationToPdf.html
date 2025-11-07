@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de PDF Professionnel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            transition: border-color 0.3s;
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .big-textarea {
+            min-height: 300px;
+        }
+        
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-container {
+            text-align: center;
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .download-btn, .load-btn, .parse-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .load-btn {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        .parse-btn {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+        }
+        
+        .download-btn:hover, .load-btn:hover, .parse-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .download-btn:active, .load-btn:active, .parse-btn:active {
+            transform: translateY(0);
+        }
+        
+        .info {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .info strong {
+            color: #667eea;
+        }
+
+        .preview-box {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .preview-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .preview-item {
+            background: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+
+        .preview-item strong {
+            color: #764ba2;
+        }
+
+        .example-format {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-line;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 Générateur de PDF Rapide</h1>
+        
+        <div class="info">
+            <p><strong>🚀 Mode Rapide !</strong> Collez tout votre texte d'un coup, le système analyse automatiquement !</p>
+            <p>✅ Conditions détectées automatiquement (Label: Valeur)</p>
+            <p>✅ Questions détectées avec le point d'interrogation (?)</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('quick')">⚡ Mode Rapide</button>
+            <button class="tab" onclick="switchTab('manual')">✏️ Mode Manuel</button>
+        </div>
+
+        <!-- MODE RAPIDE -->
+        <div id="quick" class="tab-content active">
+            <div class="section">
+                <label for="hotelNameQuick">Nom de l'Hôtel *</label>
+                <input type="text" id="hotelNameQuick" placeholder="Ex: Address Jabal Omar Makkah">
+            </div>
+            
+            <div class="section">
+                <label for="presentationQuick">1. Présentation</label>
+                <textarea id="presentationQuick" placeholder="Collez votre texte de présentation ici..."></textarea>
+            </div>
+            
+            <div class="section">
+                <label for="conditionsQuick">2. Conditions (Collez tout le texte)</label>
+                <div class="example-format">Format attendu:
+Arrivée
+À partir de 16:00
+
+Départ
+Jusqu'à 12:00
+
+Annulation & Prépaiement
+Les conditions peuvent varier...</div>
+                <textarea id="conditionsQuick" class="big-textarea" placeholder="Collez toutes vos conditions ici..."></textarea>
+                <button class="parse-btn" onclick="parseConditions()">🔍 Analyser les conditions</button>
+            </div>
+            
+            <div class="section">
+                <label for="questionsQuick">3. Questions (Collez tout le texte)</label>
+                <div class="example-format">Format attendu:
+Quelle est la distance de l'hôtel ?
+L'hôtel est situé à 500m...
+
+L'hôtel offre-t-il une vue ?
+Oui, certaines chambres...</div>
+                <textarea id="questionsQuick" class="big-textarea" placeholder="Collez toutes vos questions ici..."></textarea>
+                <button class="parse-btn" onclick="parseQuestions()">🔍 Analyser les questions</button>
+            </div>
+
+            <div id="parsedPreview"></div>
+        </div>
+
+        <!-- MODE MANUEL -->
+        <div id="manual" class="tab-content">
+            <div class="section">
+                <label for="hotelNameManual">Nom de l'Hôtel *</label>
+                <input type="text" id="hotelNameManual" placeholder="Ex: Address Jabal Omar Makkah">
+            </div>
+            
+            <div class="section">
+                <label>1. Présentation</label>
+                <textarea id="presentationManual" placeholder="Décrivez votre hôtel..."></textarea>
+            </div>
+            
+            <div class="section">
+                <label>2. Conditions d'Établissement</label>
+                <div id="conditionsContainer" class="conditions-grid"></div>
+                <button class="parse-btn" onclick="addConditionManual()">+ Ajouter</button>
+            </div>
+            
+            <div class="section">
+                <label>3. Questions</label>
+                <div id="questionsContainer"></div>
+                <button class="parse-btn" onclick="addQuestionManual()">+ Ajouter</button>
+            </div>
+        </div>
+        
+        <div class="btn-container">
+            <button class="load-btn" onclick="loadExample()">📋 Charger l'exemple</button>
+            <button class="download-btn" onclick="generatePDF()">📥 Télécharger le PDF</button>
+        </div>
+    </div>
+
+    <script>
+        let parsedConditions = [];
+        let parsedQuestions = [];
+        let manualConditions = [];
+        let manualQuestions = [];
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab).classList.add('active');
+        }
+
+       function parseConditions() {
+    const text = document.getElementById('conditionsQuick').value.trim();
+    parsedConditions = [];
+
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+
+    let currentLabel = '';
+    let currentValue = '';
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        // If line looks like a label (ends with ":" or contains no punctuation and is short)
+        if (/^[A-ZÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŸa-zàâäçéèêëîïôöùûüÿ&’'\-\s]+$/.test(line) && !line.startsWith('*')) {
+            // Save previous
+            if (currentLabel && currentValue) {
+                parsedConditions.push({ label: currentLabel.trim(), value: currentValue.trim() });
+            }
+            currentLabel = line;
+            currentValue = '';
+        } else {
+            currentValue += (currentValue ? '\n' : '') + line;
+        }
+    }
+
+    if (currentLabel && currentValue) {
+        parsedConditions.push({ label: currentLabel.trim(), value: currentValue.trim() });
+    }
+
+    showPreview();
+}
+
+
+function parseQuestions() {
+    const text = document.getElementById('questionsQuick').value.trim();
+    parsedQuestions = [];
+
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+    let currentQ = '';
+    let currentA = '';
+
+    lines.forEach(line => {
+        if (line.includes('?')) {
+            // If we already have a question+answer pair, save it
+            if (currentQ && currentA) {
+                parsedQuestions.push({ question: currentQ.trim(), answer: currentA.trim() });
+            }
+            // Start new question
+            currentQ = line;
+            currentA = '';
+        } else if (line) {
+            // Still part of the answer
+            currentA += (currentA ? '\n' : '') + line;
+        }
+    });
+
+    // Push the last one
+    if (currentQ && currentA) {
+        parsedQuestions.push({ question: currentQ.trim(), answer: currentA.trim() });
+    }
+
+    showPreview();
+}
+
+
+       
+        function showPreview() {
+            const preview = document.getElementById('parsedPreview');
+            let html = '<div class="preview-box">';
+            
+            if (parsedConditions.length > 0) {
+                html += '<h3>✅ Conditions détectées: ' + parsedConditions.length + '</h3>';
+                parsedConditions.forEach((c, i) => {
+                    html += `<div class="preview-item"><strong>${c.label}:</strong> ${c.value.substring(0, 80)}${c.value.length > 80 ? '...' : ''}</div>`;
+                });
+            }
+            
+            if (parsedQuestions.length > 0) {
+                html += '<h3>✅ Questions détectées: ' + parsedQuestions.length + '</h3>';
+                parsedQuestions.forEach((q, i) => {
+                    html += `<div class="preview-item"><strong>Q:</strong> ${q.question.substring(0, 60)}...<br><strong>R:</strong> ${q.answer.substring(0, 60)}...</div>`;
+                });
+            }
+            
+            html += '</div>';
+            preview.innerHTML = html;
+        }
+
+        function addConditionManual(label = '', value = '') {
+            const container = document.getElementById('conditionsContainer');
+            const id = Date.now();
+            const div = document.createElement('div');
+            div.style.cssText = 'display:grid;grid-template-columns:200px 1fr 50px;gap:10px;margin-bottom:10px;';
+            div.innerHTML = `
+                <input type="text" placeholder="Label" value="${label}" style="padding:10px;">
+                <textarea placeholder="Valeur" style="padding:10px;min-height:60px;">${value}</textarea>
+                <button onclick="this.parentElement.remove()" style="background:#e74c3c;color:white;border:none;border-radius:5px;cursor:pointer;">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addQuestionManual(q = '', a = '') {
+            const container = document.getElementById('questionsContainer');
+            const div = document.createElement('div');
+            div.style.cssText = 'background:#f8f9fa;padding:15px;border-radius:10px;margin-bottom:15px;position:relative;';
+            div.innerHTML = `
+                <textarea placeholder="Question" style="width:100%;padding:10px;margin-bottom:10px;min-height:60px;">${q}</textarea>
+                <textarea placeholder="Réponse" style="width:100%;padding:10px;min-height:80px;">${a}</textarea>
+                <button onclick="this.parentElement.remove()" style="position:absolute;top:10px;right:10px;background:#e74c3c;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function loadExample() {
+            const exampleData = {
+                name: 'Address Jabal Omar Makkah',
+                presentation: `Découvrez le luxe spirituel à Address Jabal Omar Makkah, un hôtel moderne alliant sophistication et vue imprenable sur la Sainte Mosquée. Profitez d'un séjour raffiné avec connexion Wi-Fi gratuite, salle de sport, restaurant et salon élégant. Savourez un petit-déjeuner buffet varié chaque matin et bénéficiez de services haut de gamme, dont un snack-bar et un centre d'affaires. Certains logements offrent des salles de bains privatives avec équipements de qualité pour un confort optimal. Une navette aéroport payante facilite vos déplacements, tandis que l'emplacement exceptionnel vous place à deux pas des sites sacrés comme Masjid Al Haram et le puits de Zamzam.`,
+                conditions: `Arrivée
+À partir de 16:00
+
+Départ
+Jusqu'à 12:00
+
+Annulation & Prépaiement
+Les conditions d'annulation et de prépaiement peuvent varier selon le type de chambre sélectionné.
+
+Enfants & Lits
+Tous les enfants sont les bienvenus.
+L'hébergement est gratuit pour les enfants de moins de 3 ans.
+Des lits bébé (0–2 ans) sont disponibles sur demande et sous réserve de disponibilité.
+Les lits d'appoint ne sont pas proposés.
+
+Âge minimum pour l'enregistrement
+Aucune restriction d'âge.
+
+Tabac
+Cet établissement est entièrement non-fumeur.
+
+Animaux
+Les animaux de compagnie ne sont pas autorisés.
+
+Modes de paiement acceptés
+Cartes bancaires uniquement. Les espèces ne sont pas acceptées.`,
+                questions: `Quelle est la distance réelle de l'hôtel Address Jabal Omar Makkah par rapport à la Mosquée sacrée (Al-Masjid Al-Haram) ?
+L'hôtel est situé à environ 500 mètres du Haram. Grâce à son emplacement exceptionnel, les pèlerins peuvent facilement s'y rendre à pied en environ 7 minutes, tout en profitant d'un parcours agréable et sécurisé.
+
+L'hôtel offre-t-il une vue sur la Kaaba ?
+Oui, certaines chambres et suites de l'hôtel offrent une vue sur la Kaaba.
+
+L'hôtel est-il accessible aux personnes handicapées ?
+Oui, l'hôtel Address Jabal Omar Makkah dispose d'équipements pour les personnes handicapées, notamment des chambres adaptées.
+
+Quelles sont les options de restauration disponibles à l'hôtel ?
+L'hôtel Address Jabal Omar Makkah compte quatre restaurants et deux cafés. Il propose également un petit-déjeuner buffet et continental moyennant des frais supplémentaires.
+
+L'hôtel propose-t-il une navette pour l'aéroport ?
+Oui, l'hôtel propose un service de navette aéroport, mais des frais supplémentaires peuvent s'appliquer.
+
+Y a-t-il un espace de prière dans l'hôtel avec vue sur le Haram ?
+Oui, l'hôtel dispose d'un Musallâ spacieux connecté au Haram, avec une vue panoramique magnifique sur la Mosquée sacrée. Cet espace sacré permet de prier dans le calme tout en étant en lien direct avec le Haram.`
+            };
+
+            document.getElementById('hotelNameQuick').value = exampleData.name;
+            document.getElementById('presentationQuick').value = exampleData.presentation;
+            document.getElementById('conditionsQuick').value = exampleData.conditions;
+            document.getElementById('questionsQuick').value = exampleData.questions;
+            
+            parseConditions();
+            parseQuestions();
+        }
+
+        function generatePDF() {
+            const isQuickMode = document.getElementById('quick').classList.contains('active');
+            
+            let hotelName, presentation, conditions, questions;
+            
+            if (isQuickMode) {
+                hotelName = document.getElementById('hotelNameQuick').value.trim();
+                presentation = document.getElementById('presentationQuick').value.trim();
+                conditions = parsedConditions;
+                questions = parsedQuestions;
+            } else {
+                hotelName = document.getElementById('hotelNameManual').value.trim();
+                presentation = document.getElementById('presentationManual').value.trim();
+                
+                conditions = [];
+                document.querySelectorAll('#conditionsContainer > div').forEach(row => {
+                    const label = row.querySelector('input').value.trim();
+                    const value = row.querySelector('textarea').value.trim();
+                    if (label && value) conditions.push({ label, value });
+                });
+                
+                questions = [];
+                document.querySelectorAll('#questionsContainer > div').forEach(item => {
+                    const textareas = item.querySelectorAll('textarea');
+                    const q = textareas[0].value.trim();
+                    const a = textareas[1].value.trim();
+                    if (q && a) questions.push({ question: q, answer: a });
+                });
+            }
+            
+            if (!hotelName) {
+                alert('Veuillez entrer le nom de l\'hôtel!');
+                return;
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            let yPos = 20;
+            const margin = 20;
+            const maxWidth = 170;
+            const lineHeight = 6;
+            const pageHeight = 280;
+            
+            // Titre
+            doc.setFontSize(22);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(40, 80, 150);
+            doc.text(hotelName, 105, yPos, { align: 'center' });
+            doc.setTextColor(0, 0, 0);
+            yPos += 15;
+            
+            // Présentation
+            if (presentation) {
+                if (yPos > pageHeight - 30) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(80, 50, 120);
+                doc.text('1. Présentation', margin, yPos);
+                doc.setTextColor(0, 0, 0);
+                yPos += 8;
+                
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'normal');
+                const presentationLines = doc.splitTextToSize(presentation, maxWidth);
+                presentationLines.forEach(line => {
+                    if (yPos > pageHeight) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    doc.text(line, margin, yPos);
+                    yPos += lineHeight;
+                });
+                yPos += 10;
+            }
+            
+            // Conditions (Tableau)
+            if (conditions.length > 0) {
+                if (yPos > pageHeight - 30) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(80, 50, 120);
+                doc.text('2. Conditions d\'Établissement', margin, yPos);
+                doc.setTextColor(0, 0, 0);
+                yPos += 10;
+                
+                conditions.forEach((condition, index) => {
+                    const rowHeight = Math.max(
+                        doc.splitTextToSize(condition.label, 55).length * lineHeight + 6,
+                        doc.splitTextToSize(condition.value, 105).length * lineHeight + 6
+                    );
+                    
+                    if (yPos + rowHeight > pageHeight) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    if (index % 2 === 0) {
+                        doc.setFillColor(245, 247, 250);
+                        doc.rect(margin, yPos - 4, maxWidth, rowHeight, 'F');
+                    }
+                    
+                    doc.setDrawColor(200, 200, 200);
+                    doc.rect(margin, yPos - 4, 60, rowHeight);
+                    doc.rect(margin + 60, yPos - 4, 110, rowHeight);
+                    
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'bold');
+                    const labelLines = doc.splitTextToSize(condition.label, 55);
+                    let labelY = yPos;
+                    labelLines.forEach(line => {
+                        doc.text(line, margin + 3, labelY);
+                        labelY += lineHeight;
+                    });
+                    
+                    doc.setFont('helvetica', 'normal');
+                    const valueLines = doc.splitTextToSize(condition.value, 105);
+                    let valueY = yPos;
+                    valueLines.forEach(line => {
+                        doc.text(line, margin + 63, valueY);
+                        valueY += lineHeight;
+                    });
+                    
+                    yPos += rowHeight;
+                });
+                
+                yPos += 10;
+            }
+            
+            // Questions
+           // Questions
+if (questions.length > 0) {
+    // Check before adding the section, not after printing the title
+    if (yPos > pageHeight - 50) {
+        doc.addPage();
+        yPos = 20;
+    }
+
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(80, 50, 120);
+    doc.text('3. Questions', margin, yPos);
+    doc.setTextColor(0, 0, 0);
+    yPos += 8; // tighter spacing under the title
+
+    questions.forEach((item, index) => {
+        if (yPos > pageHeight - 40) {
+            doc.addPage();
+            yPos = 20;
+        }
+
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        const qLines = doc.splitTextToSize(item.question, maxWidth);
+        doc.text(qLines, margin, yPos);
+        yPos += qLines.length * lineHeight + 2;
+
+        doc.setFont('helvetica', 'normal');
+        const aLines = doc.splitTextToSize(item.answer, maxWidth);
+        doc.text(aLines, margin, yPos);
+        yPos += aLines.length * lineHeight + 6;
+    });
+}
+
+            
+            // Footer
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(120, 120, 120);
+                doc.text(`Page ${i} sur ${totalPages}`, 105, 290, { align: 'center' });
+                doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, margin, 290);
+            }
+            
+            const fileName = hotelName.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.pdf';
+            doc.save(fileName);
+        }
+    </script>
+</body>
+</html>
